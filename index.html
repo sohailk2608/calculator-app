@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#edf1ed">
+  <title>Counter | Calculator</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #edf1ed;
+      --ink: #1b302d;
+      --muted: #72817b;
+      --paper: #fbfcf8;
+      --screen: #193a36;
+      --key: #f0f2eb;
+      --key-hover: #e5e9df;
+      --coral: #ed765f;
+      --coral-hover: #dc654f;
+      --lime: #c7e27e;
+      --lime-hover: #b8d56d;
+      --line: #dce3dc;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 40px 20px;
+      color: var(--ink);
+      background-color: var(--page);
+      background-image: radial-gradient(#cbd6cd 0.7px, transparent 0.7px);
+      background-size: 18px 18px;
+    }
+
+    .layout {
+      width: min(100%, 900px);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 370px;
+      align-items: center;
+      gap: clamp(36px, 8vw, 92px);
+    }
+
+    .identity { padding-bottom: 10px; }
+
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 52px;
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 1.5px;
+    }
+
+    .wordmark-mark {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px 9px 9px 3px;
+      color: var(--paper);
+      background: var(--coral);
+      font-family: Georgia, serif;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    h1 {
+      max-width: 400px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(48px, 7vw, 76px);
+      font-weight: 400;
+      line-height: 0.98;
+    }
+
+    h1 span { color: var(--coral); }
+
+    .edition {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+    }
+
+    .edition::before {
+      width: 31px;
+      height: 1px;
+      background: var(--coral);
+      content: "";
+    }
+
+    .calculator {
+      overflow: hidden;
+      padding: 18px;
+      border: 1px solid rgba(27, 48, 45, 0.08);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 24px 60px rgba(31, 56, 48, 0.12), 0 3px 9px rgba(31, 56, 48, 0.05);
+    }
+
+    .calculator-top {
+      height: 30px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 0 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 1.3px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      display: inline-block;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: #92bf59;
+      vertical-align: 1px;
+    }
+
+    .display {
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 17px 18px 15px;
+      border-radius: 5px;
+      color: #f8fbf5;
+      background: var(--screen);
+    }
+
+    .expression {
+      width: 100%;
+      min-height: 18px;
+      overflow: hidden;
+      color: #b9c9b9;
+      font-size: 13px;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .value {
+      width: 100%;
+      overflow: hidden;
+      font-size: 48px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 350;
+      line-height: 1.08;
+      text-align: right;
+      text-overflow: clip;
+      white-space: nowrap;
+    }
+
+    .value.compact { font-size: 37px; }
+    .value.micro { font-size: 28px; }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+      padding-top: 14px;
+    }
+
+    .key {
+      min-width: 0;
+      height: 62px;
+      border: 0;
+      border-radius: 5px;
+      color: var(--ink);
+      background: var(--key);
+      cursor: pointer;
+      font: inherit;
+      font-size: 21px;
+      font-variant-numeric: tabular-nums;
+      transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .key:hover { background: var(--key-hover); }
+    .key:active { transform: translateY(1px) scale(0.98); }
+    .key:focus-visible { outline: 3px solid #6c967c; outline-offset: 2px; }
+
+    .key.utility {
+      color: #4b6259;
+      font-size: 16px;
+      font-weight: 650;
+    }
+
+    .key.operator {
+      color: #fff;
+      background: var(--coral);
+      font-size: 24px;
+    }
+
+    .key.operator:hover { background: var(--coral-hover); }
+    .key.operator[aria-pressed="true"] { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.75); }
+
+    .key.equals {
+      color: #243923;
+      background: var(--lime);
+      font-size: 24px;
+      font-weight: 650;
+    }
+
+    .key.equals:hover { background: var(--lime-hover); }
+
+    .calculator-footer {
+      display: flex;
+      justify-content: space-between;
+      padding: 14px 3px 1px;
+      color: #8b9890;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.1px;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 28px 18px; }
+      .layout {
+        width: min(100%, 390px);
+        grid-template-columns: 1fr;
+        gap: 25px;
+      }
+      .identity { padding: 0 2px; }
+      .wordmark { margin-bottom: 17px; }
+      h1 { font-size: 42px; }
+      .edition { display: none; }
+      .calculator { padding: 15px; }
+      .key { height: 58px; }
+    }
+
+    @media (max-width: 360px) {
+      .keys { gap: 7px; }
+      .key { height: 54px; }
+      .display { min-height: 108px; padding-inline: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <header class="identity">
+      <div class="wordmark"><span class="wordmark-mark" aria-hidden="true">+</span> COUNTER</div>
+      <h1>Make it<br>add <span>up.</span></h1>
+      <div class="edition">A LITTLE TOOL FOR BIG NUMBERS</div>
+    </header>
+
+    <section class="calculator" aria-label="Calculator">
+      <div class="calculator-top">
+        <span><span class="status-dot" aria-hidden="true"></span>READY</span>
+        <span>CT-01</span>
+      </div>
+      <div class="display" aria-live="polite" aria-atomic="true">
+        <div class="expression" id="expression">Ready</div>
+        <div class="value" id="value">0</div>
+      </div>
+      <div class="keys" aria-label="Calculator keys">
+        <button class="key utility" type="button" data-action="clear" aria-label="Clear">AC</button>
+        <button class="key utility" type="button" data-action="backspace" aria-label="Backspace">&#9003;</button>
+        <button class="key utility" type="button" data-action="percent" aria-label="Percent">%</button>
+        <button class="key operator" type="button" data-operator="/" aria-label="Divide">&#247;</button>
+
+        <button class="key" type="button" data-digit="7">7</button>
+        <button class="key" type="button" data-digit="8">8</button>
+        <button class="key" type="button" data-digit="9">9</button>
+        <button class="key operator" type="button" data-operator="*" aria-label="Multiply">&#215;</button>
+
+        <button class="key" type="button" data-digit="4">4</button>
+        <button class="key" type="button" data-digit="5">5</button>
+        <button class="key" type="button" data-digit="6">6</button>
+        <button class="key operator" type="button" data-operator="-" aria-label="Subtract">&#8722;</button>
+
+        <button class="key" type="button" data-digit="1">1</button>
+        <button class="key" type="button" data-digit="2">2</button>
+        <button class="key" type="button" data-digit="3">3</button>
+        <button class="key operator" type="button" data-operator="+" aria-label="Add">+</button>
+
+        <button class="key utility" type="button" data-action="sign" aria-label="Change sign">&#177;</button>
+        <button class="key" type="button" data-digit="0">0</button>
+        <button class="key" type="button" data-action="decimal" aria-label="Decimal point">.</button>
+        <button class="key equals" type="button" data-action="equals" aria-label="Equals">=</button>
+      </div>
+      <div class="calculator-footer"><span>COUNTER</span><span>EST. 2026</span></div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const valueElement = document.getElementById("value");
+      const expressionElement = document.getElementById("expression");
+      const keysElement = document.querySelector(".keys");
+      let displayValue = "0";
+      let storedValue = null;
+      let pendingOperator = null;
+      let waitingForOperand = false;
+      let expressionText = "Ready";
+
+      const symbols = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+
+      function render() {
+        valueElement.textContent = displayValue;
+        expressionElement.textContent = expressionText;
+        valueElement.classList.toggle("compact", displayValue.length > 9 && displayValue.length <= 13);
+        valueElement.classList.toggle("micro", displayValue.length > 13);
+        keysElement.querySelectorAll("[data-operator]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.operator === pendingOperator));
+        });
+      }
+
+      function clear() {
+        displayValue = "0";
+        storedValue = null;
+        pendingOperator = null;
+        waitingForOperand = false;
+        expressionText = "Ready";
+        render();
+      }
+
+      function showError() {
+        displayValue = "Error";
+        storedValue = null;
+        pendingOperator = null;
+        waitingForOperand = true;
+        expressionText = "Cannot divide by zero";
+        render();
+      }
+
+      function formatResult(number) {
+        if (!Number.isFinite(number)) return null;
+        return String(Number(number.toPrecision(12)));
+      }
+
+      function calculate(left, right, operator) {
+        switch (operator) {
+          case "+": return left + right;
+          case "-": return left - right;
+          case "*": return left * right;
+          case "/": return right === 0 ? null : left / right;
+          default: return right;
+        }
+      }
+
+      function inputDigit(digit) {
+        if (displayValue === "Error") clear();
+        if (waitingForOperand) {
+          displayValue = digit;
+          waitingForOperand = false;
+        } else if (displayValue.replace("-", "").replace(".", "").length < 12) {
+          displayValue = displayValue === "0" ? digit : displayValue + digit;
+        }
+        expressionText = pendingOperator ? `${storedValue} ${symbols[pendingOperator]}` : "Ready";
+        render();
+      }
+
+      function inputDecimal() {
+        if (displayValue === "Error") clear();
+        if (waitingForOperand) {
+          displayValue = "0.";
+          waitingForOperand = false;
+        } else if (!displayValue.includes(".")) {
+          displayValue += ".";
+        }
+        expressionText = pendingOperator ? `${storedValue} ${symbols[pendingOperator]}` : "Ready";
+        render();
+      }
+
+      function chooseOperator(operator) {
+        if (displayValue === "Error") return;
+        const current = Number(displayValue);
+        if (pendingOperator && !waitingForOperand) {
+          const result = calculate(storedValue, current, pendingOperator);
+          const formatted = formatResult(result);
+          if (formatted === null) return showError();
+          displayValue = formatted;
+          storedValue = Number(formatted);
+        } else {
+          storedValue = current;
+        }
+        pendingOperator = operator;
+        waitingForOperand = true;
+        expressionText = `${displayValue} ${symbols[operator]}`;
+        render();
+      }
+
+      function equals() {
+        if (!pendingOperator || waitingForOperand || displayValue === "Error") return;
+        const left = storedValue;
+        const right = Number(displayValue);
+        const operator = pendingOperator;
+        const result = calculate(left, right, operator);
+        const formatted = formatResult(result);
+        if (formatted === null) return showError();
+        expressionText = `${left} ${symbols[operator]} ${right} =`;
+        displayValue = formatted;
+        storedValue = null;
+        pendingOperator = null;
+        waitingForOperand = true;
+        render();
+      }
+
+      function backspace() {
+        if (displayValue === "Error") return clear();
+        if (waitingForOperand) return;
+        displayValue = displayValue.length > 1 ? displayValue.slice(0, -1) : "0";
+        if (displayValue === "-" || displayValue === "-0") displayValue = "0";
+        render();
+      }
+
+      function changeSign() {
+        if (displayValue === "Error" || Number(displayValue) === 0) return;
+        displayValue = displayValue.startsWith("-") ? displayValue.slice(1) : `-${displayValue}`;
+        render();
+      }
+
+      function percent() {
+        if (displayValue === "Error") return;
+        const formatted = formatResult(Number(displayValue) / 100);
+        if (formatted === null) return showError();
+        displayValue = formatted;
+        waitingForOperand = false;
+        render();
+      }
+
+      function activate(action) {
+        if (action === "clear") clear();
+        else if (action === "backspace") backspace();
+        else if (action === "decimal") inputDecimal();
+        else if (action === "sign") changeSign();
+        else if (action === "percent") percent();
+        else if (action === "equals") equals();
+      }
+
+      keysElement.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        if (button.dataset.digit !== undefined) inputDigit(button.dataset.digit);
+        else if (button.dataset.operator) chooseOperator(button.dataset.operator);
+        else activate(button.dataset.action);
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (/^[0-9]$/.test(event.key)) inputDigit(event.key);
+        else if (event.key === "." || event.key === ",") inputDecimal();
+        else if (["+", "-", "*", "/"].includes(event.key)) chooseOperator(event.key);
+        else if (event.key === "Enter" || event.key === "=") equals();
+        else if (event.key === "Backspace") backspace();
+        else if (event.key === "Escape" || event.key === "Delete") clear();
+        else return;
+        event.preventDefault();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
